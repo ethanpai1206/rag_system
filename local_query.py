@@ -12,6 +12,7 @@ from llama_index.core.retrievers import VectorIndexRetriever
 from mxbai_rerank import MxbaiRerankV2
 
 from shared_config import Config
+from logging_config import get_query_logger
 
 
 class LocalQuerySystem:
@@ -19,6 +20,9 @@ class LocalQuerySystem:
 
     def __init__(self):
         """初始化本地查詢系統"""
+        # 初始化 logger（只記錄到文件，不顯示在 console）
+        self.query_logger = get_query_logger(enable_console=False)
+
         # 驗證配置
         Config.validate()
 
@@ -207,23 +211,24 @@ class LocalQuerySystem:
             print(answer)
             print(f"\n⏱️  處理時間: {processing_time:.2f} 秒")
 
-            # 顯示來源資訊
+            # 處理來源資訊（只記錄到 log 文件，不在 console 顯示）
             sources = []
             if show_sources and hasattr(response, 'source_nodes'):
-                print(f"\n📚 參考來源:")
+                # 組織完整的來源資訊用於 log 記錄
+                sources_log = "\n📚 參考來源:\n"
+
                 for i, node in enumerate(response.source_nodes, 1):
                     score = node.score if hasattr(node, 'score') else 0.0
                     metadata = node.metadata if hasattr(node, 'metadata') else {}
 
-                    print(f"\n{i}. 相似度分數: {score:.4f}")
+                    sources_log += f"\n{i}. 相似度分數: {score:.4f}\n"
                     if 'source' in metadata:
-                        print(f"   來源: {metadata['source']}")
+                        sources_log += f"   來源: {metadata['source']}\n"
                     if 'paragraph_id' in metadata:
-                        print(f"   段落 ID: {metadata['paragraph_id']}")
+                        sources_log += f"   段落 ID: {metadata['paragraph_id']}\n"
 
-                    # 顯示文本片段（前200字符）
-                    text_preview = node.text[:200] + "..." if len(node.text) > 200 else node.text
-                    print(f"   內容: {text_preview}")
+                    # 記錄完整內容到 log
+                    sources_log += f"   內容: {node.text}\n"
 
                     source_info = {
                         "text": node.text,
@@ -232,12 +237,20 @@ class LocalQuerySystem:
                     }
                     sources.append(source_info)
 
-            return {
+                # 只記錄到 log 文件，不在 console 顯示
+                self.query_logger.log_info(sources_log)
+
+            result = {
                 "question": question,
                 "answer": answer,
                 "sources": sources,
                 "processing_time": processing_time
             }
+
+            # 記錄查詢結果到 log 文件
+            self.query_logger.log_query_result(result)
+
+            return result
 
         except Exception as e:
             print(f"✗ 查詢失敗: {e}")
