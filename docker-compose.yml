@@ -1,0 +1,23 @@
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: dockerfile
+    image: rag_system:v1.0
+    restart: unless-stopped
+    container_name: "rag_system"
+    volumes:
+      # 映射整個專案目錄，讓容器內外同步
+      - .:/home/ubuntu/workspace/rag_system
+      # 映射 data 目錄
+      - ./data:/home/ubuntu/workspace/rag_system/data
+    working_dir: /home/ubuntu/workspace/rag_system
+    stdin_open: true
+    tty: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
