@@ -1,13 +1,12 @@
 # RAG System - 檢索增強生成系統
 
-基於 LlamaIndex、Milvus 和 OpenAI 的企業級 RAG（Retrieval-Augmented Generation）系統，提供文檔智能問答服務。
+基於 LlamaIndex、Milvus 和 OpenAI 的 RAG（Retrieval-Augmented Generation）系統，提供文檔智能問答服務。
 
 ## 🚀 功能特性
 
 - **文檔處理**：支援 PDF 文件解析和文字處理
 - **向量化存儲**：使用 Milvus 向量資料庫進行高效檢索
 - **智能問答**：結合 OpenAI GPT 模型生成準確回答
-- **RESTful API**：提供完整的 Web API 服務
 - **本地查詢**：支援命令列和交互式查詢模式
 - **模組化設計**：數據處理和查詢服務完全分離
 - **批次處理**：支援大量文檔的批次入庫和查詢
@@ -55,7 +54,7 @@ flowchart LR
 
 | 步驟 | 說明 | 使用技術 |
 |------|------|----------|
-| ❓ 提問 | 使用者輸入問題 | 命令列 / API |
+| ❓ 提問 | 使用者輸入問題 | 命令列 |
 | 🔢 向量化 | 將問題轉換為 1536 維向量 | OpenAI text-embedding-3-small |
 | 🔍 檢索 | 在向量資料庫中找出最相關的 Top-K 文檔 | Milvus 語意搜尋 |
 | 🎯 重排序 | 使用 Rerank 模型精準排序檢索結果 | MxbaiRerankV2 |
@@ -69,9 +68,7 @@ flowchart LR
 rag_system/
 ├── shared_config.py          # 共享配置
 ├── document_indexing.py      # 文檔索引模組
-├── query_service.py          # 查詢服務 API
 ├── local_query.py            # 本地查詢工具
-├── main.py                   # 原始整合版本（可選）
 ├── docker-compose-milvus.yml # Milvus 容器配置
 ├── requirements.txt          # Python 依賴
 ├── .env.example             # 環境變數範例
@@ -80,24 +77,32 @@ rag_system/
 
 ## 🛠️ 環境需求
 
-- Python 3.8+
+### 方法一：本地安裝
+- Python 3.10+
 - Docker 和 Docker Compose
+- OpenAI API 金鑰
+
+### 方法二：Docker 開發環境（推薦）
+- Docker 和 Docker Compose
+- NVIDIA GPU（可選，用於 GPU 加速）
 - OpenAI API 金鑰
 
 ## 📦 安裝步驟
 
-### 1. 克隆專案
+### 方法一：本地安裝（手動配置）
+
+#### 1. 克隆專案
 ```bash
 git clone <your-repo-url>
 cd rag_system
 ```
 
-### 2. 安裝 Python 依賴
+#### 2. 安裝 Python 依賴
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. 設置環境變數
+#### 3. 設置環境變數
 ```bash
 cp .env.example .env
 # 編輯 .env 文件，填入你的 OpenAI API 金鑰
@@ -108,14 +113,14 @@ cp .env.example .env
 OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-### 4. 啟動 Milvus 向量資料庫
+#### 4. 啟動 Milvus 向量資料庫
 ```bash
 docker-compose -f docker-compose-milvus.yml up -d
 ```
 
 等待所有服務啟動完成（大約 30-60 秒）。
 
-### 5. 驗證 Milvus 運行狀態
+#### 5. 驗證 Milvus 運行狀態
 ```bash
 # 檢查容器狀態
 docker-compose -f docker-compose-milvus.yml ps
@@ -124,13 +129,69 @@ docker-compose -f docker-compose-milvus.yml ps
 curl http://localhost:9091/healthz
 ```
 
+---
+
+### 方法二：Docker 完整開發環境（推薦）
+
+此方法將整個開發環境打包到 Docker 容器中，包含所有依賴和配置。
+
+#### 1. 克隆專案
+```bash
+git clone <your-repo-url>
+cd rag_system
+```
+
+#### 2. 設置環境變數
+```bash
+cp .env.example .env
+# 編輯 .env 文件，填入你的 OpenAI API 金鑰
+```
+
+#### 3. 啟動完整環境
+```bash
+# 啟動 Milvus 向量資料庫
+docker-compose -f docker-compose-milvus.yml up -d
+
+# 構建並啟動開發容器
+docker-compose up -d --build
+```
+
+#### 4. 進入開發容器
+```bash
+docker exec -it rag_system bash
+```
+
+#### 5. 容器內已包含
+- ✅ Python 3.10 + 所有依賴套件
+- ✅ CUDA 12.8 + cuDNN（支援 GPU）
+- ✅ Node.js 18 + Claude Code CLI
+- ✅ 完整的開發工具鏈
+
+#### 6. 在容器內執行指令
+```bash
+# 文檔索引
+python document_indexing.py --pdf your_document.pdf
+
+# 查詢問答
+python local_query.py -q "你的問題"
+```
+
+#### 7. 停止環境
+```bash
+# 停止開發容器
+docker-compose down
+
+# 停止 Milvus（可選）
+docker-compose -f docker-compose-milvus.yml down
+```
+
 ## 🚀 使用指南
 
 ### 第一階段：文檔索引
 
-#### 處理單個 PDF 文件
+#### 處理單個 PDF 文件（使用提供的測試檔案）
 ```bash
-python document_indexing.py --pdf your_document.pdf
+python document_indexing.py --pdf llama2.pdf
 ```
 
 #### 批次處理目錄中的 PDF 文件
@@ -155,65 +216,23 @@ python document_indexing.py --clear
 
 ### 第二階段：查詢服務
 
-系統提供兩種查詢方式：
-
-#### 方式一：RESTful API 服務
-
-```bash
-python query_service.py
-```
-
-服務啟動後：
-- API 服務：http://localhost:8000
-- API 文檔：http://localhost:8000/docs
-- 健康檢查：http://localhost:8000/health
-
-#### 方式二：本地查詢工具（推薦）
+#### 本地查詢工具
 
 ```bash
 # 交互式模式（預設）
 python local_query.py
 
-# 單次查詢
-python local_query.py -q "什麼是人工智慧？"
+# 單次查詢（基於 llama2.pdf 的內容）
+python local_query.py -q "Llama 2有多少参数"
+
+# 預期回答：
+# Llama 2 提供多个参数规模：7B、13B 和 70B（论文中还报告了34B版本，但未发布）。
 
 # 檢索相關文檔
-python local_query.py -d "機器學習" -k 3
+python local_query.py -d "Llama 2" -k 3
 
 # 批次查詢
-python local_query.py -b "什麼是AI？" "深度學習是什麼？" -o results.json
-```
-
-## 📡 API 使用
-
-### 1. 問答查詢
-```bash
-curl -X POST "http://localhost:8000/query" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "question": "什麼是人工智慧？",
-       "top_k": 5
-     }'
-```
-
-### 2. 相關文檔檢索
-```bash
-curl -X POST "http://localhost:8000/relevant-docs" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "question": "機器學習的應用",
-       "top_k": 3
-     }'
-```
-
-### 3. 健康檢查
-```bash
-curl http://localhost:8000/health
-```
-
-### 4. 服務統計
-```bash
-curl http://localhost:8000/stats
+python local_query.py -b "Llama 2有多少参数" "Llama 2的训练数据是什么" -o results.json
 ```
 
 ## 💻 本地查詢工具詳細說明
@@ -259,33 +278,7 @@ python local_query.py -q "什麼是NLP？" --no-sources
 - `-o, --output`：輸出文件路徑
 - `--no-sources`：不顯示來源信息
 
-## 🐍 Python API 程式範例
-
-### RESTful API 調用
-
-```python
-import requests
-
-# API 基礎 URL
-BASE_URL = "http://localhost:8000"
-
-# 問答查詢
-def ask_question(question, top_k=5):
-    response = requests.post(
-        f"{BASE_URL}/query",
-        json={
-            "question": question,
-            "top_k": top_k
-        }
-    )
-    return response.json()
-
-# 使用範例
-result = ask_question("什麼是深度學習？")
-print(f"問題：{result['question']}")
-print(f"回答：{result['answer']}")
-print(f"處理時間：{result['processing_time']:.2f} 秒")
-```
+## 🐍 Python 程式範例
 
 ### 本地查詢系統調用
 
@@ -398,23 +391,11 @@ docker-compose -f docker-compose-milvus.yml up -d
 3. **索引優化**：在 Milvus 中調整索引參數
 4. **硬體配置**：為 Milvus 分配足夠的記憶體和 CPU
 
-## 🤝 貢獻指南
-
-1. Fork 本專案
-2. 建立功能分支 (`git checkout -b feature/amazing-feature`)
-3. 提交更改 (`git commit -m 'Add some amazing feature'`)
-4. 推送到分支 (`git push origin feature/amazing-feature`)
-5. 開啟 Pull Request
 
 ## 📄 授權條款
 
 本專案採用 MIT 授權條款 - 查看 [LICENSE](LICENSE) 文件了解詳情。
 
-## 📞 聯絡資訊
-
-如有問題或建議，請：
-- 開啟 GitHub Issue
-- 發送電子郵件至：your-email@example.com
 
 ## 🙏 致謝
 
