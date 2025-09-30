@@ -76,7 +76,6 @@ milvus_llamaindex.db
 *.log
 
 # Data files
-*.pdf
 data/
 documents/
 
