@@ -33,6 +33,36 @@ flowchart LR
 | 🔢 向量化 | 文字轉 1536 維向量 | OpenAI text-embedding-3-small |
 | 💾 存儲 | 向量索引建立與存儲 | Milvus VectorStore |
 
+## 🔍 查詢問答流程
+
+```mermaid
+flowchart LR
+    A[❓ 使用者提問] --> B[🔢 問題向量化<br/>text-embedding-3-small<br/>1536 維]
+    B --> C[🔍 向量檢索<br/>Milvus<br/>Top-K 相關文檔]
+    C --> D[🎯 重排序<br/>MxbaiRerankV2<br/>精準排序]
+    D --> E[📝 組合 Prompt<br/>問題 + 檢索結果<br/>套入模板]
+    E --> F[🤖 LLM 生成<br/>OpenAI GPT<br/>生成答案]
+    F --> G[💬 返回結果]
+
+    style A fill:#e8f5e9
+    style B fill:#fff3e0
+    style C fill:#e3f2fd
+    style D fill:#f3e5f5
+    style E fill:#fce4ec
+    style F fill:#e1f5fe
+    style G fill:#e8f5e9
+```
+
+| 步驟 | 說明 | 使用技術 |
+|------|------|----------|
+| ❓ 提問 | 使用者輸入問題 | 命令列 / API |
+| 🔢 向量化 | 將問題轉換為 1536 維向量 | OpenAI text-embedding-3-small |
+| 🔍 檢索 | 在向量資料庫中找出最相關的 Top-K 文檔 | Milvus 語意搜尋 |
+| 🎯 重排序 | 使用 Rerank 模型精準排序檢索結果 | MxbaiRerankV2 |
+| 📝 組合 | 將問題和檢索結果套入 Prompt 模板 | Custom PromptTemplate |
+| 🤖 生成 | LLM 根據上下文生成答案 | OpenAI GPT-4 |
+| 💬 返回 | 返回答案和來源資訊 | JSON / 命令列輸出 |
+
 ## 📁 專案結構
 
 ```
