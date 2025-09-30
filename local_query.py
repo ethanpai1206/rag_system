@@ -109,7 +109,7 @@ class LocalQuerySystem:
             print(f"✗ 系統初始化失敗: {e}")
             print("\n請確保：")
             print("1. Milvus 服務已啟動")
-            print("2. 已有數據在 Milvus 中（使用 data_ingestion.py 先入庫數據）")
+            print("2. 已有數據在 Milvus 中（使用 document_indexing.py 先入庫數據）")
             print("3. OpenAI API 金鑰設置正確")
             sys.exit(1)
 

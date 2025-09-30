@@ -17,7 +17,7 @@
 ```
 rag_system/
 ├── shared_config.py          # 共享配置
-├── data_ingestion.py         # 數據入庫模組
+├── document_indexing.py      # 文檔索引模組
 ├── query_service.py          # 查詢服務 API
 ├── local_query.py            # 本地查詢工具
 ├── main.py                   # 原始整合版本（可選）
@@ -75,31 +75,31 @@ curl http://localhost:9091/healthz
 
 ## 🚀 使用指南
 
-### 第一階段：數據入庫
+### 第一階段：文檔索引
 
 #### 處理單個 PDF 文件
 ```bash
-python data_ingestion.py --pdf your_document.pdf
+python document_indexing.py --pdf your_document.pdf
 ```
 
 #### 批次處理目錄中的 PDF 文件
 ```bash
-python data_ingestion.py --directory ./documents --pattern "*.pdf"
+python document_indexing.py --directory ./documents --pattern "*.pdf"
 ```
 
 #### 直接輸入文字資料
 ```bash
-python data_ingestion.py --text "這是第一段文字" "這是第二段文字"
+python document_indexing.py --text "這是第一段文字" "這是第二段文字"
 ```
 
 #### 示例模式（測試用）
 ```bash
-python data_ingestion.py
+python document_indexing.py
 ```
 
 #### 清空數據庫
 ```bash
-python data_ingestion.py --clear
+python document_indexing.py --clear
 ```
 
 ### 第二階段：查詢服務
