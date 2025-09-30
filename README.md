@@ -12,6 +12,27 @@
 - **模組化設計**：數據處理和查詢服務完全分離
 - **批次處理**：支援大量文檔的批次入庫和查詢
 
+## 📊 文檔索引流程
+
+```mermaid
+flowchart LR
+    A[📄 PDF 讀取<br/>pdfminer] --> B[✂️ 語意切分<br/>SemanticSplitter]
+    B --> C[🔢 向量化<br/>text-embedding-3-small<br/>1536 維]
+    C --> D[💾 Milvus<br/>向量資料庫]
+
+    style A fill:#e3f2fd
+    style B fill:#f3e5f5
+    style C fill:#fff3e0
+    style D fill:#e8f5e9
+```
+
+| 步驟 | 說明 | 使用技術 |
+|------|------|----------|
+| 📄 讀取 | 提取 PDF 文字內容 | pdfminer |
+| ✂️ 切分 | 智能語意切分，避免生硬斷句 | SemanticSplitterNodeParser |
+| 🔢 向量化 | 文字轉 1536 維向量 | OpenAI text-embedding-3-small |
+| 💾 存儲 | 向量索引建立與存儲 | Milvus VectorStore |
+
 ## 📁 專案結構
 
 ```
